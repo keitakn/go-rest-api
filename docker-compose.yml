@@ -1,0 +1,12 @@
+version: '3.5'
+
+services:
+  go-rest-api:
+    build:
+      context: .
+      target: build
+    volumes:
+      - ./:/go/app
+    command: go run main.go
+    ports:
+      - 9999:8080
