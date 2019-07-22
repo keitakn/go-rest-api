@@ -34,3 +34,46 @@ docker run -p 8080:8080 -d --name go-rest-api go-rest-api
 
 ## コードの整形
 `go fmt`
+
+## 各エンドポイントのメモ
+
+## ユーザー登録
+
+```
+curl -X POST -v \
+-H "Content-type: application/json" \
+-d \
+'
+{
+  "name": "keitakn"
+}
+' \
+http://127.0.0.1:8080/users
+```
+
+## ユーザー取得（すべて）
+
+`curl -v http://127.0.0.1:8080/users`
+
+## ユーザー取得（ID指定）
+
+`curl -v http://127.0.0.1:8080/users/{id}`
+
+
+## ユーザー更新
+
+```
+curl -X PUT -v \
+-H "Content-type: application/json" \
+-d \
+'
+{
+  "name": "keita-keita"
+}
+' \
+http://127.0.0.1:8080/users/{id}
+```
+
+## ユーザー削除
+
+`curl -v -X DELETE http://127.0.0.1:8080/users/2`
