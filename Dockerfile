@@ -1,4 +1,4 @@
-FROM golang:1.12.5-alpine3.9 as build
+FROM golang:1.12.7-alpine3.10 as build
 
 WORKDIR /go/app
 
@@ -9,7 +9,7 @@ RUN set -x && \
   apk add --no-cache git && \
   go build -o go-rest-api
 
-FROM alpine:3.9
+FROM alpine:3.10
 
 WORKDIR /app
 
