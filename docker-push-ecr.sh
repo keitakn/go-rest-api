@@ -11,14 +11,19 @@ if [ "$2" = "" ]; then
   exit 1
 fi
 
+if [ "${AWS_ACCOUNT_ID}" = "" ]; then
+  echo  "Invalid Environment variable! Please set Your AWS_ACCOUNT_ID."
+  exit 1
+fi
+
 deployStage="$1"
 imageTag="$2"
 
-repositoryUri="843096335084.dkr.ecr.ap-northeast-1.amazonaws.com/${deployStage}-go-rest-api"
+repositoryUri="${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/${deployStage}-go-rest-api"
 
 $(aws ecr get-login --no-include-email --region ap-northeast-1 --profile nekochans-dev)
 
-docker build --no-cache --rm -t ${repositoryUri} .
-docker tag ${repositoryUri}:latest ${repositoryUri}:${imageTag}
-docker push ${repositoryUri}:latest
-docker push ${repositoryUri}:${imageTag}
+docker build --no-cache --rm -t "${repositoryUri}" .
+docker tag "${repositoryUri}":latest "${repositoryUri}":"${imageTag}"
+docker push "${repositoryUri}":latest
+docker push "${repositoryUri}":"${imageTag}"

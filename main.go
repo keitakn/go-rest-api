@@ -17,6 +17,7 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
+		rest.Get("/", HealthCheck),
 		rest.Get("/users", users.GetAllUsers),
 		rest.Post("/users", users.PostUser),
 		rest.Get("/users/:id", users.GetUser),
@@ -76,7 +77,7 @@ func (u *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	u.Lock()
-	id := fmt.Sprintf("%d", len(u.Store)) // stupid
+	id := fmt.Sprintf("%d", len(u.Store))
 	user.Id = id
 	u.Store[id] = &user
 	u.Unlock()
@@ -110,4 +111,16 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	delete(u.Store, id)
 	u.Unlock()
 	w.WriteHeader(http.StatusOK)
+}
+
+func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
+	type HealthCheckResponse struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	}
+
+	res := HealthCheckResponse{Code: 200, Message: "OK"}
+
+	w.WriteHeader(http.StatusOK)
+	w.WriteJson(res)
 }

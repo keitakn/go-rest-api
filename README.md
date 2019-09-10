@@ -11,7 +11,7 @@ GoLang製のREST APIサンプルプロジェクト
 
 `docker-compose up`
 
-`curl -v http://127.0.0.1:9999` で動作している事を確認出来る。
+`curl -v http://127.0.0.1:8080` で動作している事を確認出来る。
 
 ### 停止
 
@@ -34,6 +34,14 @@ docker run -p 8080:8080 -d --name go-rest-api go-rest-api
 
 ## コードの整形
 `go fmt`
+
+## ECRへのプッシュ
+
+`docker-push-ecr.sh` を実行して下さい。（当然事前にECRリポジトリを作成しておく必要があります）
+
+このscriptの実行には環境変数 `AWS_ACCOUNT_ID` を設定しておく必要があります。
+
+[direnv](https://github.com/direnv/direnv) 等を使って環境変数を設定して下さい。
 
 ## 各エンドポイントのメモ
 
