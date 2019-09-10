@@ -11,7 +11,7 @@ GoLang製のREST APIサンプルプロジェクト
 
 `docker-compose up`
 
-`curl -v http://127.0.0.1:9999` で動作している事を確認出来る。
+`curl -v http://127.0.0.1:8080` で動作している事を確認出来る。
 
 ### 停止
 

@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.7'
 
 services:
   go-rest-api:
@@ -9,4 +9,4 @@ services:
       - ./:/go/app
     command: go run main.go
     ports:
-      - 9999:8080
+      - 8080:8080
