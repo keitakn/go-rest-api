@@ -13,3 +13,6 @@
 
 # GoLand Setting Files
 .idea
+
+# Go Binary
+go-rest-api
