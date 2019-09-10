@@ -16,3 +16,6 @@
 
 # Go Binary
 go-rest-api
+
+# env files
+.envrc
