@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
 	"os"
@@ -115,10 +118,20 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
+	responseId := GenerateResponseId()
+
 	type HealthCheckResponse struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
 	}
+
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"HealthCheck",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+	)
 
 	// Fargateでセットした環境変数が読み込めるかテスト
 	slackToken := os.Getenv("SLACK_TOKEN")
@@ -127,4 +140,42 @@ func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.WriteJson(res)
+}
+
+func CreateLogger() *zap.Logger {
+	level := zap.NewAtomicLevel()
+	level.SetLevel(zapcore.DebugLevel)
+
+	zapConfig := zap.Config{
+		Level:    level,
+		Encoding: "json",
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:        "Time",
+			LevelKey:       "Level",
+			NameKey:        "Name",
+			CallerKey:      "Caller",
+			MessageKey:     "Msg",
+			StacktraceKey:  "St",
+			EncodeLevel:    zapcore.CapitalLevelEncoder,
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeDuration: zapcore.StringDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		},
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
+	logger, _ := zapConfig.Build()
+
+	return logger
+}
+
+func GenerateResponseId() string {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	uu := u.String()
+
+	return uu
 }
