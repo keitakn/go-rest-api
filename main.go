@@ -70,6 +70,18 @@ func (u *Users) FetchUser(w rest.ResponseWriter, r *rest.Request) {
 		rest.NotFound(w, r)
 		return
 	}
+
+	responseId := GenerateResponseId()
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"FetchUser",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+		zap.Object("user", user),
+	)
+
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteJson(user)
 }
 
@@ -85,6 +97,18 @@ func (u *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
 	user.Id = id
 	u.Store[id] = &user
 	u.Unlock()
+
+	responseId := GenerateResponseId()
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"PostUser",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+		zap.Object("user", user),
+	)
+
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteJson(&user)
 }
 
@@ -138,6 +162,7 @@ func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
 
 	res := HealthCheckResponse{Code: 200, Message: slackToken}
 
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteHeader(http.StatusOK)
 	w.WriteJson(res)
 }
@@ -167,6 +192,12 @@ func CreateLogger() *zap.Logger {
 	logger, _ := zapConfig.Build()
 
 	return logger
+}
+
+func (u User) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("Id", u.Id)
+	enc.AddString("Name", u.Name)
+	return nil
 }
 
 func GenerateResponseId() string {
