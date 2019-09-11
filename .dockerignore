@@ -16,7 +16,10 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+.git
 .gitignore
 .github
 LICENSE
 README.md
+docker-compose.yml
+docker-push-ecr.sh
