@@ -22,9 +22,9 @@ func main() {
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Get("/", HealthCheck),
-		rest.Get("/users", users.GetAllUsers),
+		rest.Get("/users", users.FetchAllUsers),
 		rest.Post("/users", users.PostUser),
-		rest.Get("/users/:id", users.GetUser),
+		rest.Get("/users/:id", users.FetchUser),
 		rest.Put("/users/:id", users.PutUser),
 		rest.Delete("/users/:id", users.DeleteUser),
 	)
@@ -45,7 +45,7 @@ type Users struct {
 	Store map[string]*User
 }
 
-func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) FetchAllUsers(w rest.ResponseWriter, r *rest.Request) {
 	u.RLock()
 	users := make([]User, len(u.Store))
 	i := 0
@@ -57,7 +57,7 @@ func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&users)
 }
 
-func (u *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) FetchUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	u.RLock()
 	var user *User
