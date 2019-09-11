@@ -1,0 +1,24 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+schema:
+  - name: app
+    path: .
+    commands:
+      install:
+        status: true
+        method: go build -o go-rest-api
+      run:
+        status: true
+        method: ./go-rest-api
+    watcher:
+      extensions:
+        - go
+      paths:
+        - /
+      ignore:
+        paths:
+          - .git
+          - .realize
+          - vendor
