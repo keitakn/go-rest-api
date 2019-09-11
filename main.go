@@ -3,8 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -18,9 +22,9 @@ func main() {
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Get("/", HealthCheck),
-		rest.Get("/users", users.GetAllUsers),
+		rest.Get("/users", users.FetchAllUsers),
 		rest.Post("/users", users.PostUser),
-		rest.Get("/users/:id", users.GetUser),
+		rest.Get("/users/:id", users.FetchUser),
 		rest.Put("/users/:id", users.PutUser),
 		rest.Delete("/users/:id", users.DeleteUser),
 	)
@@ -41,7 +45,7 @@ type Users struct {
 	Store map[string]*User
 }
 
-func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) FetchAllUsers(w rest.ResponseWriter, r *rest.Request) {
 	u.RLock()
 	users := make([]User, len(u.Store))
 	i := 0
@@ -53,7 +57,7 @@ func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&users)
 }
 
-func (u *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) FetchUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	u.RLock()
 	var user *User
@@ -66,6 +70,18 @@ func (u *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
 		rest.NotFound(w, r)
 		return
 	}
+
+	responseId := GenerateResponseId()
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"FetchUser",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+		zap.Object("user", user),
+	)
+
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteJson(user)
 }
 
@@ -81,6 +97,18 @@ func (u *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
 	user.Id = id
 	u.Store[id] = &user
 	u.Unlock()
+
+	responseId := GenerateResponseId()
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"PostUser",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+		zap.Object("user", user),
+	)
+
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteJson(&user)
 }
 
@@ -114,13 +142,71 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
+	responseId := GenerateResponseId()
+
 	type HealthCheckResponse struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
 	}
 
-	res := HealthCheckResponse{Code: 200, Message: "OK"}
+	var logger *zap.Logger
+	logger = CreateLogger()
+	logger.Info(
+		"HealthCheck",
+		zap.String("Channel", "go-rest-api"),
+		zap.String("ResponseId", responseId),
+	)
 
+	// Fargateでセットした環境変数が読み込めるかテスト
+	slackToken := os.Getenv("SLACK_TOKEN")
+
+	res := HealthCheckResponse{Code: 200, Message: slackToken}
+
+	w.Header().Set("X-Response-Id", responseId)
 	w.WriteHeader(http.StatusOK)
 	w.WriteJson(res)
+}
+
+func CreateLogger() *zap.Logger {
+	level := zap.NewAtomicLevel()
+	level.SetLevel(zapcore.DebugLevel)
+
+	zapConfig := zap.Config{
+		Level:    level,
+		Encoding: "json",
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:        "Time",
+			LevelKey:       "Level",
+			NameKey:        "Name",
+			CallerKey:      "Caller",
+			MessageKey:     "Msg",
+			StacktraceKey:  "St",
+			EncodeLevel:    zapcore.CapitalLevelEncoder,
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeDuration: zapcore.StringDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		},
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
+	logger, _ := zapConfig.Build()
+
+	return logger
+}
+
+func (u User) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddString("Id", u.Id)
+	enc.AddString("Name", u.Name)
+	return nil
+}
+
+func GenerateResponseId() string {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	uu := u.String()
+
+	return uu
 }

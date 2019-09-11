@@ -1,6 +1,19 @@
 # go-rest-api
 GoLang製のREST APIサンプルプロジェクト
 
+## 環境変数の設定
+
+以下の環境変数を設定して下さい。
+
+```
+export AWS_ACCOUNT_ID=あなたのAWSアカウントID
+export SLACK_TOKEN=適当な値でOKです
+```
+
+本プロジェクトでは、実験の為 `SLACK_TOKEN` の値をJSONで返しているので機密情報は決して入れないで下さい。
+
+`AWS_ACCOUNT_ID` はなくても動作しますが、ECRへプッシュする際には必須になります。
+
 ## ローカル環境で動作させる
 
 ### 初回起動時
