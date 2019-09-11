@@ -15,3 +15,5 @@ services:
       - apparmor:unconfined
     cap_add:
       - SYS_PTRACE
+    environment:
+      - SLACK_TOKEN=${SLACK_TOKEN}

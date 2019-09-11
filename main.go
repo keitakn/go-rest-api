@@ -5,6 +5,7 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -119,7 +120,10 @@ func HealthCheck(w rest.ResponseWriter, r *rest.Request) {
 		Message string `json:"message"`
 	}
 
-	res := HealthCheckResponse{Code: 200, Message: "OK"}
+	// Fargateでセットした環境変数が読み込めるかテスト
+	slackToken := os.Getenv("SLACK_TOKEN")
+
+	res := HealthCheckResponse{Code: 200, Message: slackToken}
 
 	w.WriteHeader(http.StatusOK)
 	w.WriteJson(res)
