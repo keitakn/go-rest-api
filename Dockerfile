@@ -8,7 +8,8 @@ RUN set -x && \
   apk update && \
   apk add --no-cache git && \
   go build -o go-rest-api && \
-  go get -u github.com/oxequa/realize && \
+  go get gopkg.in/urfave/cli.v2@master && \
+  go get github.com/oxequa/realize && \
   go get -u github.com/go-delve/delve/cmd/dlv && \
   go build -o /go/bin/dlv github.com/go-delve/delve/cmd/dlv
 
